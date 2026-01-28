@@ -1,19 +1,12 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { Md2Poster, Md2PosterContent, Md2PosterHeader, Md2PosterFooter } from './packages'
 // import './App.css'
 
 function App() {
-  const markdownRef = useRef<any>(null);
- 
-  const handleCopy = () => {
-    markdownRef?.current?.handleCopy().then((res) => {
-      alert('promise copy')
-    });
-  };
-  const copySuccessCallback = () => {
-    console.log('Copy Success');
-  }
-  const markdown = `
+  const markdownRef = useRef<any>(null)
+  const [markdown, setMarkdown] = useState<string>('')
+
+  const defaultMarkdown = `
   # 能力媲美GPT-4，价格为其百分之一
 
   先看性能。
@@ -120,22 +113,69 @@ function App() {
   市场有风险，投资需谨慎。本文不构成个人投资建议，也未考虑到个别用户特殊的投资目标、财务状况或需要。用户应考虑本文中的任何意见、观点或结论是否符合其特定状况。据此投资，责任自负。
   `
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const mdParam = params.get('md')
+    const mdUrlParam = params.get('md_url')
+
+    if (mdParam) {
+      try {
+        const decoded = decodeURIComponent(mdParam)
+        setMarkdown(decoded)
+        return
+      } catch {
+        setMarkdown(mdParam)
+        return
+      }
+    }
+
+    if (mdUrlParam) {
+      fetch(mdUrlParam)
+        .then((res) => res.text())
+        .then((text) => setMarkdown(text))
+        .catch(() => {
+          setMarkdown(defaultMarkdown)
+        })
+      return
+    }
+
+    setMarkdown(defaultMarkdown)
+  }, [])
+
+  const handleCopy = () => {
+    markdownRef?.current?.handleCopy().then(() => {
+      alert('promise copy')
+    })
+  }
+  const copySuccessCallback = () => {
+    console.log('Copy Success')
+  }
+
   return (
     <main>
-      <Md2Poster theme="SpringGradientWave" size='mobile' ref={markdownRef} copySuccessCallback={copySuccessCallback} canCopy>
-        <Md2PosterHeader className='flex justify-between items-center px-4'>
-          <span>
-            @Nickname
-          </span>
-          <span>
-            {new Date().toISOString().slice(0, 10)}
-          </span>
-        </Md2PosterHeader>
-        <Md2PosterContent>{markdown}</Md2PosterContent>
-        <Md2PosterFooter className='flex justify-center items-center gap-1'>
-           <button onClick={handleCopy} className='border p-2 rounded border-white'>Copy Image</button>
-        </Md2PosterFooter>
-      </Md2Poster>
+      <div id="poster-root">
+        <Md2Poster
+          theme="SpringGradientWave"
+          size="mobile"
+          ref={markdownRef}
+          copySuccessCallback={copySuccessCallback}
+          canCopy
+        >
+          <Md2PosterHeader className="flex justify-between items-center px-4">
+            <span>@Nickname</span>
+            <span>{new Date().toISOString().slice(0, 10)}</span>
+          </Md2PosterHeader>
+          <Md2PosterContent>{markdown}</Md2PosterContent>
+          <Md2PosterFooter className="flex justify-center items-center gap-1">
+            <button
+              onClick={handleCopy}
+              className="border p-2 rounded border-white"
+            >
+              Copy Image
+            </button>
+          </Md2PosterFooter>
+        </Md2Poster>
+      </div>
     </main>
   )
 }
