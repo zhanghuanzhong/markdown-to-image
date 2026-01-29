@@ -1,0 +1,103 @@
+# =============================================================================
+# 海报配置文件 - 所有可配置项及可选值说明
+# 文件位置：项目根目录 poster.config.yaml（必须放根目录，应用会从此处读取）
+# 修改后请保存文件，并刷新浏览器（或重新运行 npm run dev）后再生成海报，否则可能仍使用旧配置
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# poster - 海报根容器 (Md2Poster 组件)
+# -----------------------------------------------------------------------------
+poster:
+  # theme - 主题/背景
+  # 可选值: blue | pink | purple | green | yellow | gray | red | indigo | SpringGradientWave | keji02
+  # 渐变色: blue, pink, purple, green, yellow, gray, red, indigo
+  # 背景图: SpringGradientWave, keji02
+  theme: SpringGradientWave
+
+  # size - 海报尺寸
+  # 可选值: mobile | desktop
+  # mobile = 竖版小图 (max-w-lg)  desktop = 横版大图 (max-w-4xl)
+  size: mobile
+
+  # aspectRatio - 宽高比
+  # 可选值: "auto" | "16/9" | "1/1" | "4/3"
+  # 注意: 含斜杠的值建议加引号，如 "16/9"
+  aspectRatio: "auto"
+
+  # canCopy - 是否显示「复制为图片」按钮
+  # 可选值: true | false
+  canCopy: false
+
+  # className - 根节点额外 Tailwind CSS 类名（可选，不填则留空或省略）
+  # 示例: "rounded-xl shadow-2xl"
+  className: ""
+
+# -----------------------------------------------------------------------------
+# header - 顶栏 (Md2PosterHeader 组件)
+# -----------------------------------------------------------------------------
+header:
+  # 方式一：单行文字 + position 控制整体对齐
+  # text - 顶栏文字；可用 {{date}} 占位符
+  #text: "suge.AI {{date}}"
+
+  # position - 顶栏整体对齐，可选值: left | center | right（仅当未设置 leftText/rightText 时生效）
+  #position: left
+
+  # 方式二：左右分栏（左侧 suge.AI，右侧日期），与 text 二选一
+  leftText: "suge.AI"
+  rightText: "{{date}}"
+
+  # paddingY - 顶栏垂直方向离边缘距离，越小越贴边：0 | 1 | 2 | 4 | 6 | 8 | 10 | 12（默认 4）
+  paddingY: 1
+
+  # fontSize - 顶栏字体大小，可选值: xs | sm | base | lg | xl | 2xl | 3xl（默认 base）
+  fontSize: xs
+
+  # color - 顶栏文字颜色，Tailwind 颜色名，如 white | gray-50 | gray-100 | black（默认 white）
+  color: white
+
+  # className - 顶栏容器样式（可选）
+  className: ""
+
+# -----------------------------------------------------------------------------
+# content - 正文区 (Md2PosterContent 组件)
+# -----------------------------------------------------------------------------
+content:
+  # paddingY - 正文块上下边距，0 | 1 | 2 | 4 | 6 | 8 | 10 | 12（默认 8）
+  paddingY: 4
+  # markdown - 正文 Markdown 内容
+  # 支持标准 Markdown 及 GFM（表格、任务列表等）
+  markdown: |
+    # 标题示例
+    > 引用块
+    正文内容 **加粗** 与列表：
+    1. 第一项
+    2. 第二项
+
+  # className - 正文区域容器额外类名（可选）
+  className: ""
+
+  # articleClassName - 文章排版（prose）类名
+  # 可选，默认: "prose prose-gray prose-img:rounded-lg prose-img:border prose-img:opacity-100"
+  # 可改为其他 Tailwind Typography 类，如: "prose prose-sm prose-invert"
+  articleClassName: "prose prose-gray prose-img:rounded-lg prose-img:border prose-img:opacity-100"
+
+# -----------------------------------------------------------------------------
+# footer - 底栏 (Md2PosterFooter 组件)
+# -----------------------------------------------------------------------------
+footer:
+  # text - 底栏文字内容
+  text: "Powered by suge.com"
+  # position - 底栏对齐，可选值: left | center | right
+  position: center
+  # paddingY - 底栏垂直方向离边缘距离，越小越贴边：0 | 1 | 2 | 4 | 6 | 8 | 10 | 12（默认 4）
+  paddingY: 1
+
+  # fontSize - 底栏字体大小，可选值: xs | sm | base | lg | xl | 2xl | 3xl（默认 base）
+  fontSize: xs
+
+  # color - 底栏文字颜色，如 white | gray-50 | gray-100 | black（默认 gray-50）
+  color: gray-50
+
+  # className - 底栏容器样式（可选）
+  className: ""

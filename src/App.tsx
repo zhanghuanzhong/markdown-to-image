@@ -1,10 +1,68 @@
 import React, { useRef, useEffect, useState } from 'react'
+import yaml from 'js-yaml'
 import { Md2Poster, Md2PosterContent, Md2PosterHeader, Md2PosterFooter } from './packages'
 // import './App.css'
+
+// 构建时直接读取项目根目录的 poster.config.yaml（Vite 不允许从 public 导入，故放根目录）
+import configRaw from '../poster.config.yaml?raw'
+
+/** 顶栏/底栏对齐：左 | 中 | 右 */
+type PositionAlign = 'left' | 'center' | 'right'
+
+/** poster.config.yaml 解析后的类型 */
+interface PosterConfig {
+  poster?: {
+    theme?: string
+    size?: 'desktop' | 'mobile'
+    aspectRatio?: string
+    canCopy?: boolean
+    className?: string
+  }
+  header?: {
+    text?: string
+    leftText?: string
+    rightText?: string
+    position?: PositionAlign
+    /** 顶栏垂直方向离边缘距离，Tailwind 间距 0-12 */
+    paddingY?: number | string
+    /** 顶栏字体大小：xs | sm | base | lg | xl | 2xl | 3xl */
+    fontSize?: string
+    /** 顶栏文字颜色：white | gray-50 | gray-100 | gray-200 | black 等 Tailwind 颜色名 */
+    color?: string
+    className?: string
+  }
+  content?: {
+    markdown?: string
+    /** 正文块垂直方向上下边距，Tailwind 间距 0-12（默认 8） */
+    paddingY?: number | string
+    className?: string
+    articleClassName?: string
+  }
+  footer?: {
+    text?: string
+    position?: PositionAlign
+    paddingY?: number | string
+    /** 底栏字体大小，同 header.fontSize */
+    fontSize?: string
+    /** 底栏文字颜色，同 header.color */
+    color?: string
+    className?: string
+  }
+}
+
+const initialConfig: PosterConfig | null = (() => {
+  try {
+    return yaml.load(configRaw) as PosterConfig
+  } catch {
+    return null
+  }
+})()
 
 function App() {
   const markdownRef = useRef<any>(null)
   const [markdown, setMarkdown] = useState<string>('')
+  const [config, setConfig] = useState<PosterConfig | null>(initialConfig)
+  const [configLoaded, setConfigLoaded] = useState(false) // 供 Python 脚本等待配置加载后再截图
 
   const defaultMarkdown = `
   # 能力媲美GPT-4，价格为其百分之一
@@ -120,26 +178,24 @@ function App() {
 
     if (mdParam) {
       try {
-        const decoded = decodeURIComponent(mdParam)
-        setMarkdown(decoded)
-        return
+        setMarkdown(decodeURIComponent(mdParam))
       } catch {
         setMarkdown(mdParam)
-        return
       }
-    }
-
-    if (mdUrlParam) {
+    } else if (mdUrlParam) {
       fetch(mdUrlParam)
         .then((res) => res.text())
         .then((text) => setMarkdown(text))
-        .catch(() => {
-          setMarkdown(defaultMarkdown)
-        })
-      return
+        .catch(() => setMarkdown(defaultMarkdown))
+    } else if (config?.content?.markdown) {
+      setMarkdown(config.content.markdown)
+    } else {
+      setMarkdown(defaultMarkdown)
     }
 
-    setMarkdown(defaultMarkdown)
+    // 延迟标记就绪，供 Python 截图前等待
+    const t = setTimeout(() => setConfigLoaded(true), 300)
+    return () => clearTimeout(t)
   }, [])
 
   const handleCopy = () => {
@@ -151,28 +207,102 @@ function App() {
     console.log('Copy Success')
   }
 
+  const posterTheme = (config?.poster?.theme ?? 'SpringGradientWave') as 'blue' | 'pink' | 'purple' | 'green' | 'yellow' | 'gray' | 'red' | 'indigo' | 'SpringGradientWave' | 'keji02'
+  const posterSize = config?.poster?.size ?? 'mobile'
+  const aspectRatioRaw = config?.poster?.aspectRatio
+  const posterAspectRatio = (['auto', '16/9', '1/1', '4/3'].includes(String(aspectRatioRaw)) ? String(aspectRatioRaw) : 'auto') as 'auto' | '16/9' | '1/1' | '4/3'
+  const posterCanCopy = config?.poster?.canCopy ?? false
+  const currentDate = new Date().toISOString().slice(0, 10)
+  const replaceDate = (s: string) => s.replace(/\{\{date\}\}/gi, currentDate)
+  const headerLeftText = config?.header?.leftText != null ? replaceDate(config.header.leftText) : null
+  const headerRightText = config?.header?.rightText != null ? replaceDate(config.header.rightText) : null
+  const headerTextRaw = config?.header?.text ?? `@Nickname · ${currentDate}`
+  const headerText = replaceDate(headerTextRaw)
+  const headerPosition = config?.header?.position ?? 'center'
+  const headerPositionClass = {
+    left: 'flex justify-start items-center text-left',
+    center: 'flex justify-center items-center text-center',
+    right: 'flex justify-end items-center text-right',
+  }[headerPosition]
+  const validPy = (n: number | string | undefined, defaultVal: string) => {
+    const v = n != null ? String(n) : defaultVal
+    return ['0', '1', '2', '3', '4', '5', '6', '8', '10', '12'].includes(v) ? `py-${v}` : `py-${defaultVal}`
+  }
+  const validTextSize = (s: string | undefined, defaultVal: string) => {
+    const v = s?.toLowerCase()
+    const allowed = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl']
+    return v && allowed.includes(v) ? `text-${v}` : `text-${defaultVal}`
+  }
+  const validTextColor = (s: string | undefined, defaultVal: string) => {
+    if (s == null || s === '') return `text-${defaultVal}`
+    return s.startsWith('text-') ? s : `text-${s}`
+  }
+  const headerPy = validPy(config?.header?.paddingY, '4')
+  const headerFontSize = validTextSize(config?.header?.fontSize, 'base')
+  const headerColor = validTextColor(config?.header?.color, 'white')
+  const headerBaseLayout =
+    headerLeftText != null && headerRightText != null
+      ? 'flex justify-between items-center px-4 w-full'
+      : `${headerPositionClass} px-4 w-full`
+  const headerClassName = [headerPy, headerFontSize, headerColor, headerBaseLayout, config?.header?.className].filter(Boolean).join(' ')
+  const footerText = config?.footer?.text ?? 'Powered by ReadPo.com'
+  const footerPosition = config?.footer?.position ?? 'center'
+  const footerPositionClass = {
+    left: 'flex justify-start items-center text-left',
+    center: 'flex justify-center items-center text-center',
+    right: 'flex justify-end items-center text-right',
+  }[footerPosition]
+  const footerPy = validPy(config?.footer?.paddingY, '4')
+  const footerFontSize = validTextSize(config?.footer?.fontSize, 'base')
+  const footerColor = validTextColor(config?.footer?.color, 'gray-50')
+  const footerBaseLayout = `gap-1 w-full ${footerPositionClass}`
+  const footerClassName = [footerPy, footerFontSize, footerColor, footerBaseLayout, config?.footer?.className].filter(Boolean).join(' ')
+  const contentPy = validPy(config?.content?.paddingY, '8')
+  const contentClassName = [contentPy, config?.content?.className].filter(Boolean).join(' ')
+  const contentArticleClassName = config?.content?.articleClassName
+
   return (
     <main>
-      <div id="poster-root">
+      <div
+        id="poster-root"
+        className="w-fit"
+        data-config-ready={configLoaded ? 'true' : undefined}
+        data-theme={posterTheme}
+      >
         <Md2Poster
-          theme="SpringGradientWave"
-          size="mobile"
+          theme={posterTheme}
+          size={posterSize}
+          aspectRatio={posterAspectRatio}
           ref={markdownRef}
           copySuccessCallback={copySuccessCallback}
-          canCopy
+          canCopy={posterCanCopy}
+          className={config?.poster?.className}
         >
-          <Md2PosterHeader className="flex justify-between items-center px-4">
-            <span>@Nickname</span>
-            <span>{new Date().toISOString().slice(0, 10)}</span>
+          <Md2PosterHeader className={headerClassName}>
+            {headerLeftText != null && headerRightText != null ? (
+              <>
+                <span>{headerLeftText}</span>
+                <span>{headerRightText}</span>
+              </>
+            ) : (
+              headerText
+            )}
           </Md2PosterHeader>
-          <Md2PosterContent>{markdown}</Md2PosterContent>
-          <Md2PosterFooter className="flex justify-center items-center gap-1">
-            <button
-              onClick={handleCopy}
-              className="border p-2 rounded border-white"
-            >
-              Copy Image
-            </button>
+          <Md2PosterContent className={contentClassName} articleClassName={contentArticleClassName}>
+            {markdown}
+          </Md2PosterContent>
+          <Md2PosterFooter className={footerClassName}>
+            <span className="flex gap-2 flex-wrap items-center">
+              {footerText}
+              {posterCanCopy && (
+                <button
+                  onClick={handleCopy}
+                  className="border p-2 rounded border-white"
+                >
+                  Copy Image
+                </button>
+              )}
+            </span>
           </Md2PosterFooter>
         </Md2Poster>
       </div>

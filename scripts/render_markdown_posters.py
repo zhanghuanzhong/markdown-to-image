@@ -1,50 +1,14 @@
 from pathlib import Path
-from urllib.parse import quote
 
-from playwright.sync_api import sync_playwright
+from poster_render import (
+  DEFAULT_BASE_URL,
+  render_section_to_image,
+  split_markdown_by_section,
+)
 
 
-BASE_URL = "http://localhost:5173"
+BASE_URL = DEFAULT_BASE_URL
 OUTPUT_DIR = Path("output_posters")
-
-
-def split_markdown_by_section(path: str) -> list[str]:
-  """按二级标题（## ）将 markdown 切分为多个章节，每个章节对应一张海报。"""
-  text = Path(path).read_text(encoding="utf-8")
-  sections: list[str] = []
-  current: list[str] = []
-
-  for line in text.splitlines(keepends=True):
-    if line.startswith("## ") and current:
-      sections.append("".join(current))
-      current = [line]
-    else:
-      current.append(line)
-
-  if current:
-    sections.append("".join(current))
-
-  return sections
-
-
-def render_section_to_image(md: str, index: int) -> None:
-  """调用前端渲染单个章节并截图为图片。"""
-  OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
-
-  # 约定前端使用 window.location.search 中的 ?md 参数接收 markdown
-  safe_md = quote(md)
-  url = f"{BASE_URL}/?md={safe_md}"
-
-  with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page()
-    page.goto(url, wait_until="networkidle")
-    # 等待海报容器渲染完成（App.tsx 中的 #poster-root）
-    page.wait_for_selector("#poster-root")
-    page.locator("#poster-root").screenshot(
-      path=str(OUTPUT_DIR / f"poster_{index:02d}.png")
-    )
-    browser.close()
 
 
 def main() -> None:
@@ -82,7 +46,7 @@ def main() -> None:
 
   for i, sec_md in enumerate(sections, start=1):
     print(f"渲染第 {i} 个章节为海报...")
-    render_section_to_image(sec_md, i)
+    render_section_to_image(sec_md, i, OUTPUT_DIR, BASE_URL)
 
   print(f"完成！共生成 {len(sections)} 张海报，输出目录：{OUTPUT_DIR}")
 

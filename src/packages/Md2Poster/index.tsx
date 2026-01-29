@@ -14,6 +14,7 @@ type IThemeType =
   | 'indigo'
   //image bg
   | 'SpringGradientWave'
+  | 'keji02'
 type IAspectRatioType = 'auto' | '16/9' | '1/1' | '4/3'
 type ISizeType = 'desktop' | 'mobile'
 
@@ -45,6 +46,7 @@ const themeMapClassName = {
   indigo: 'bg-gradient-to-br from-indigo-700 via-blue-600/80 to-indigo-700',
   //image bg
   SpringGradientWave: 'bg-spring-gradient-wave bg-cover',
+  keji02: 'bg-keji02 bg-cover',
 }
 
 const aspectRatioMapClassName = {
@@ -159,10 +161,10 @@ const Md2Poster = forwardRef<Md2PosterRef, Md2PosterProps>(
     }
 
     return (
-      <div className="markdown-to-image-root">
+      <div className="markdown-to-image-root w-fit">
         <div
           ref={mdRef}
-          className={cn('w-full relative', themeClassName, aspectRatioClassName, className, sizeClassName)}
+          className={cn('w-full relative min-w-0', themeClassName, aspectRatioClassName, className, sizeClassName)}
         >
           {children}
         </div>

@@ -10,7 +10,8 @@ export default {
         '4/3': '4 / 3',
       },
       backgroundImage: {
-        'spring-gradient-wave': "url('/src/assets/bg/SpringGradientWave.jpg')"
+        'spring-gradient-wave': "url('/bg/SpringGradientWave.jpg')",
+        'keji02': "url('/bg/kejibg02.jpg')"
       }
     },
   },

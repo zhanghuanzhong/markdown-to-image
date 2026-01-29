@@ -59,6 +59,7 @@
     "@storybook/react-vite": "^8.0.9",
     "@storybook/test": "^8.0.9",
     "@tailwindcss/typography": "^0.5.12",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
@@ -84,6 +85,7 @@
   "dependencies": {
     "@uiw/react-md-editor": "^4.0.5",
     "clsx": "^2.1.1",
+    "js-yaml": "^4.1.1",
     "lucide-react": "^0.468.0",
     "modern-screenshot": "^4.4.39",
     "react-markdown": "^9.0.1",

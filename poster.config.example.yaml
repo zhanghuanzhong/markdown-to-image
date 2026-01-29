@@ -1,0 +1,61 @@
+# =============================================================================
+# 海报配置示例 - 所有可配置项及可选值说明
+# 复制为项目根目录的 poster.config.yaml 使用，修改后刷新浏览器即可生效
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# poster - 海报根容器 (Md2Poster 组件)
+# -----------------------------------------------------------------------------
+poster:
+  # theme - 主题/背景
+  # 可选值: blue | pink | purple | green | yellow | gray | red | indigo | SpringGradientWave | keji02
+  theme: SpringGradientWave
+
+  # size - 海报尺寸  可选值: mobile | desktop
+  size: mobile
+
+  # aspectRatio - 宽高比  可选值: "auto" | "16/9" | "1/1" | "4/3"
+  aspectRatio: "auto"
+
+  # canCopy - 是否显示「复制为图片」按钮  可选值: true | false
+  canCopy: true
+
+  # className - 根节点额外 Tailwind 类名（可选）
+  className: ""
+
+# -----------------------------------------------------------------------------
+# header - 顶栏 (Md2PosterHeader 组件)
+# -----------------------------------------------------------------------------
+header:
+  # 可用 {{date}} 占位符；position: left | center | right
+  text: "@Nickname · {{date}}"
+  position: center
+  # paddingY: 4          # 顶栏上下边距 0-12
+  # fontSize: base       # xs | sm | base | lg | xl | 2xl | 3xl
+  # color: white         # 顶栏文字颜色，如 white | gray-50 | black
+  className: ""
+
+# -----------------------------------------------------------------------------
+# content - 正文区 (Md2PosterContent 组件)
+# -----------------------------------------------------------------------------
+content:
+  # paddingY: 8          # 正文块上下边距 0-12（默认 8）
+  markdown: |
+    # 标题示例
+    > 引用块
+    正文内容 **加粗** 与列表：
+    1. 第一项
+    2. 第二项
+  className: ""
+  articleClassName: "prose prose-gray prose-img:rounded-lg prose-img:border prose-img:opacity-100"
+
+# -----------------------------------------------------------------------------
+# footer - 底栏 (Md2PosterFooter 组件)
+# -----------------------------------------------------------------------------
+footer:
+  text: "Powered by ReadPo.com"
+  position: center
+  # paddingY: 4          # 底栏上下边距 0-12
+  # fontSize: base       # xs | sm | base | lg | xl | 2xl | 3xl
+  # color: gray-50       # 底栏文字颜色，如 white | gray-50 | black
+  className: ""

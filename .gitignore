@@ -25,5 +25,12 @@ dist-ssr
 
 *storybook.log
 
+# API 生成的文件
+generated
+.env
+
+# Python
+__pycache__
+*.pyc
 
 example/node_modules
